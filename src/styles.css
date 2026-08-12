@@ -503,10 +503,7 @@ button:focus-visible {
 .possible-type p {
 	margin-top: 4rem;
 }
-.possible-type.is-infinite strong {
-	font-size: clamp(180px, 40vw, 580px);
-	line-height: 0.62;
-}
+.possible-type small { display: block; margin-top: 1.05rem; font: 10px "PingFang SC", "Hiragino Sans GB", sans-serif; letter-spacing: 0.12em; opacity: 0.54; }
 @keyframes possibility-arrive {
 	from { opacity: 0; filter: blur(6px); transform: scale(0.94); }
 	to { opacity: 1; filter: blur(0); transform: scale(1); }

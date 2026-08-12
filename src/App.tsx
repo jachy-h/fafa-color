@@ -211,9 +211,6 @@ export function App() {
 	const [spectrum, setSpectrum] = useState<number[]>(() => readTodaySpectrum());
 	const [storyBlue, setStoryBlue] = useState(0);
 	const [possibilityCount, setPossibilityCount] = useState(0);
-	const [possibilityPhase, setPossibilityPhase] = useState<
-		"before" | "count" | "infinity"
-	>("before");
 	const possibilitySequenceStarted = useRef(false);
 	const latest = useRef({
 		blue: 0,
@@ -328,35 +325,24 @@ export function App() {
 	useEffect(() => {
 		if (!possibilitySequenceVisible) {
 			possibilitySequenceStarted.current = false;
-			setPossibilityPhase("before");
 			setPossibilityCount(0);
 			return;
 		}
 		if (possibilitySequenceStarted.current) return;
 		possibilitySequenceStarted.current = true;
-		setPossibilityPhase("count");
 		setPossibilityCount(0);
 
 		let animationFrame = 0;
-		let infinityTimer = 0;
 		const startedAt = performance.now();
 		const duration = reducedMotion ? 0 : 720;
 		const count = (time: number) => {
 			const amount = duration === 0 ? 1 : Math.min(1, (time - startedAt) / duration);
 			setPossibilityCount(Math.round(amount * 256));
-			if (amount < 1) {
-				animationFrame = requestAnimationFrame(count);
-			} else {
-				infinityTimer = window.setTimeout(
-					() => setPossibilityPhase("infinity"),
-					reducedMotion ? 0 : 70,
-				);
-			}
+			if (amount < 1) animationFrame = requestAnimationFrame(count);
 		};
 		animationFrame = requestAnimationFrame(count);
 		return () => {
 			cancelAnimationFrame(animationFrame);
-			window.clearTimeout(infinityTimer);
 		};
 	}, [possibilitySequenceVisible, reducedMotion]);
 
@@ -454,14 +440,13 @@ export function App() {
 					aria-label="256 种可能"
 				>
 					<div
-						className={`scene__center possible-type ${possibilityPhase === "infinity" ? "is-infinite" : ""}`}
+						className="scene__center possible-type"
 						style={{ opacity: possibilityOpacity }}
 					>
-						<div className="possible-value" key={possibilityPhase}>
-							<strong aria-label={possibilityPhase === "infinity" ? "正无穷" : `${possibilityCount}`}>
-								{possibilityPhase === "infinity" ? "∞" : possibilityCount}
-							</strong>
+						<div className="possible-value">
+							<strong aria-label={`${possibilityCount}`}>{possibilityCount}</strong>
 							<p>种颜色的可能</p>
+							<small>也可能是 ∞？</small>
 						</div>
 					</div>
 				</section>
