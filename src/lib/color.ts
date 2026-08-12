@@ -19,8 +19,3 @@ export function fafaHex(value: number): string {
 export function progressToBlue(progress: number): number {
 	return clampBlue(Math.max(0, Math.min(1, progress)) * 255);
 }
-
-export function parseBlue(value: string | null): number | null {
-	if (!value || !/^[\da-f]{1,2}$/i.test(value)) return null;
-	return Number.parseInt(value, 16);
-}

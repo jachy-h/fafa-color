@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { fafaColor, fafaHex, parseBlue, progressToBlue } from "./lib/color";
+import { fafaColor, fafaHex, progressToBlue } from "./lib/color";
 import {
 	readTodaySpectrum,
 	rememberColor,
@@ -199,24 +199,23 @@ function Spectrum({ colors, onPick }: { colors: number[]; onPick: (blue: number)
 
 export function App() {
 	const params = new URLSearchParams(window.location.search);
-	const sharedBlue = parseBlue(params.get("b"));
 	const debug = params.get("debug") === "true";
 	const reducedMotion = window.matchMedia(
 		"(prefers-reduced-motion: reduce)",
 	).matches;
-	const [blue, setBlue] = useState(sharedBlue ?? 0);
+	const [blue, setBlue] = useState(0);
 	const [progress, setProgress] = useState(0);
 	const [copied, setCopied] = useState(false);
 	const [fps, setFps] = useState(60);
 	const [spectrum, setSpectrum] = useState<number[]>(() => readTodaySpectrum());
-	const [storyBlue, setStoryBlue] = useState(sharedBlue ?? 0);
+	const [storyBlue, setStoryBlue] = useState(0);
 	const [possibilityCount, setPossibilityCount] = useState(0);
 	const [possibilityPhase, setPossibilityPhase] = useState<
 		"before" | "count" | "infinity"
 	>("before");
 	const possibilitySequenceStarted = useRef(false);
 	const latest = useRef({
-		blue: sharedBlue ?? 0,
+		blue: 0,
 		progress: 0,
 		manual: null as number | null,
 		storyStage: -1,
@@ -231,10 +230,14 @@ export function App() {
 			"--fafa-color",
 			fafaColor(nextBlue),
 		);
-		const url = new URL(window.location.href);
-		url.searchParams.set("b", nextBlue.toString(16).padStart(2, "0"));
-		window.history.replaceState({}, "", url);
 		if (remember) setSpectrum(rememberColor(nextBlue));
+	}, []);
+
+	useEffect(() => {
+		const url = new URL(window.location.href);
+		if (!url.searchParams.has("b")) return;
+		url.searchParams.delete("b");
+		window.history.replaceState({}, "", url);
 	}, []);
 
 	useEffect(() => {
@@ -302,7 +305,7 @@ export function App() {
 	}, [reducedMotion]);
 
 	const copyCurrent = async () => {
-		choose(blue);
+		setSpectrum(rememberColor(blue));
 		try {
 			await navigator.clipboard.writeText(window.location.href);
 			setCopied(true);
@@ -393,7 +396,7 @@ export function App() {
 						<button
 							className="hex-button"
 							onClick={copyCurrent}
-							aria-label={`复制 ${fafaHex(blue)} 的链接`}
+							aria-label={`留存 ${fafaHex(blue)} 并复制页面链接`}
 						>
 							<Counter blue={blue} />
 						</button>
