@@ -37,12 +37,6 @@ function sceneFor(progress: number): string {
 	return "light";
 }
 
-function possibilityPhaseFor(progress: number): "before" | "count" | "infinity" {
-	if (progress < 0.79) return "before";
-	if (progress < 0.85) return "count";
-	return "infinity";
-}
-
 function Counter({ blue }: { blue: number }) {
 	const characters = fafaHex(blue).slice(-2).split("");
 	return (
@@ -218,6 +212,10 @@ export function App() {
 	const [spectrum, setSpectrum] = useState<number[]>(() => readTodaySpectrum());
 	const [storyBlue, setStoryBlue] = useState(sharedBlue ?? 0);
 	const [possibilityCount, setPossibilityCount] = useState(0);
+	const [possibilityPhase, setPossibilityPhase] = useState<
+		"before" | "count" | "infinity"
+	>("before");
+	const possibilitySequenceStarted = useRef(false);
 	const latest = useRef({
 		blue: sharedBlue ?? 0,
 		progress: 0,
@@ -323,27 +321,43 @@ export function App() {
 
 	const [title, line] = storyFor(blue);
 	const [storyTitle, storyLine] = storyFor(storyBlue);
-	const possibilityPhase = possibilityPhaseFor(progress);
+	const possibilitySequenceVisible = progress >= 0.79;
 	const possibilityOpacity = Math.max(0, Math.min(1, (0.9 - progress) / 0.025));
 
 	useEffect(() => {
-		if (possibilityPhase === "before") {
+		if (!possibilitySequenceVisible) {
+			possibilitySequenceStarted.current = false;
+			setPossibilityPhase("before");
 			setPossibilityCount(0);
 			return;
 		}
-		if (possibilityPhase === "infinity") return;
+		if (possibilitySequenceStarted.current) return;
+		possibilitySequenceStarted.current = true;
+		setPossibilityPhase("count");
+		setPossibilityCount(0);
 
 		let animationFrame = 0;
+		let infinityTimer = 0;
 		const startedAt = performance.now();
 		const duration = reducedMotion ? 0 : 1200;
 		const count = (time: number) => {
 			const amount = duration === 0 ? 1 : Math.min(1, (time - startedAt) / duration);
 			setPossibilityCount(Math.round(amount * 256));
-			if (amount < 1) animationFrame = requestAnimationFrame(count);
+			if (amount < 1) {
+				animationFrame = requestAnimationFrame(count);
+			} else {
+				infinityTimer = window.setTimeout(
+					() => setPossibilityPhase("infinity"),
+					reducedMotion ? 0 : 120,
+				);
+			}
 		};
 		animationFrame = requestAnimationFrame(count);
-		return () => cancelAnimationFrame(animationFrame);
-	}, [possibilityPhase, reducedMotion]);
+		return () => {
+			cancelAnimationFrame(animationFrame);
+			window.clearTimeout(infinityTimer);
+		};
+	}, [possibilitySequenceVisible, reducedMotion]);
 
 	return (
 		<main className="artwork">
