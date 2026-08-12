@@ -19,6 +19,8 @@ const MOMENTS = [
 	{ at: 255, word: "光" },
 ];
 
+const STORY_BEATS = [158, 177, 206] as const;
+
 function closestMoment(blue: number): string {
 	return MOMENTS.reduce((nearest, moment) =>
 		Math.abs(moment.at - blue) < Math.abs(nearest.at - blue) ? moment : nearest,
@@ -213,7 +215,7 @@ export function App() {
 		blue: sharedBlue ?? 0,
 		progress: 0,
 		manual: null as number | null,
-		storyLatched: false,
+		storyStage: -1,
 	});
 	const lastRender = useRef(0);
 	const copyTimer = useRef<number | undefined>(undefined);
@@ -248,12 +250,19 @@ export function App() {
 			);
 			const nextProgress = Math.max(0, Math.min(1, window.scrollY / maxScroll));
 			const baseBlue = progressToBlue(nextProgress);
-			const inStoryScene = nextProgress >= 0.62 && nextProgress < 0.84;
-			if (inStoryScene && !latest.current.storyLatched) {
-				latest.current.storyLatched = true;
-				setStoryBlue(baseBlue);
-			} else if (!inStoryScene) {
-				latest.current.storyLatched = false;
+			const nextStoryStage =
+				nextProgress < 0.62 || nextProgress >= 0.84
+					? -1
+					: nextProgress < 0.69
+						? 0
+						: nextProgress < 0.78
+							? 1
+							: 2;
+			if (nextStoryStage !== -1 && nextStoryStage !== latest.current.storyStage) {
+				latest.current.storyStage = nextStoryStage;
+				setStoryBlue(STORY_BEATS[nextStoryStage]);
+			} else if (nextStoryStage === -1) {
+				latest.current.storyStage = -1;
 			}
 			if (Math.abs(nextProgress - latest.current.progress) > 0.00001) {
 				latest.current.manual = null;
