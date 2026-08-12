@@ -453,7 +453,7 @@ export function App() {
 							<strong aria-label={possibilityPhase === "infinity" ? "正无穷" : `${possibilityCount}`}>
 								{possibilityPhase === "infinity" ? "∞" : possibilityCount}
 							</strong>
-							<p>{possibilityPhase === "infinity" ? "有正无穷个可能" : "种颜色的可能"}</p>
+							<p>种颜色的可能</p>
 						</div>
 					</div>
 				</section>
