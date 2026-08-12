@@ -394,14 +394,14 @@ button:focus-visible {
 	z-index: 3;
 	display: flex;
 	align-items: center;
-	justify-content: flex-end;
+	justify-content: flex-start;
 	height: 0;
 	border-top: 1px solid rgba(18, 18, 22, 0.62);
 	transform: translateY(-50%);
 	pointer-events: none;
 }
 .field-cursor span {
-	margin-right: -0.05rem;
+	margin-left: -0.05rem;
 	padding: 0.22rem 0.38rem;
 	background: rgba(255, 255, 255, 0.66);
 	color: rgba(18, 18, 22, 0.72);
