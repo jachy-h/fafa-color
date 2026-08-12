@@ -37,6 +37,12 @@ function sceneFor(progress: number): string {
 	return "light";
 }
 
+function possibilityPhaseFor(progress: number): "before" | "count" | "infinity" {
+	if (progress < 0.79) return "before";
+	if (progress < 0.85) return "count";
+	return "infinity";
+}
+
 function Counter({ blue }: { blue: number }) {
 	const characters = fafaHex(blue).slice(-2).split("");
 	return (
@@ -211,6 +217,7 @@ export function App() {
 	const [fps, setFps] = useState(60);
 	const [spectrum, setSpectrum] = useState<number[]>(() => readTodaySpectrum());
 	const [storyBlue, setStoryBlue] = useState(sharedBlue ?? 0);
+	const [possibilityCount, setPossibilityCount] = useState(0);
 	const latest = useRef({
 		blue: sharedBlue ?? 0,
 		progress: 0,
@@ -316,8 +323,27 @@ export function App() {
 
 	const [title, line] = storyFor(blue);
 	const [storyTitle, storyLine] = storyFor(storyBlue);
-	const possibilities = 256 - blue;
-	const possibilityOpacity = Math.max(0, Math.min(1, (0.92 - progress) / 0.08));
+	const possibilityPhase = possibilityPhaseFor(progress);
+	const possibilityOpacity = Math.max(0, Math.min(1, (0.9 - progress) / 0.025));
+
+	useEffect(() => {
+		if (possibilityPhase === "before") {
+			setPossibilityCount(0);
+			return;
+		}
+		if (possibilityPhase === "infinity") return;
+
+		let animationFrame = 0;
+		const startedAt = performance.now();
+		const duration = reducedMotion ? 0 : 1200;
+		const count = (time: number) => {
+			const amount = duration === 0 ? 1 : Math.min(1, (time - startedAt) / duration);
+			setPossibilityCount(Math.round(amount * 256));
+			if (amount < 1) animationFrame = requestAnimationFrame(count);
+		};
+		animationFrame = requestAnimationFrame(count);
+		return () => cancelAnimationFrame(animationFrame);
+	}, [possibilityPhase, reducedMotion]);
 
 	return (
 		<main className="artwork">
@@ -406,11 +432,15 @@ export function App() {
 					aria-label="256 种可能"
 				>
 					<div
-						className="scene__center possible-type"
+						className={`scene__center possible-type ${possibilityPhase === "infinity" ? "is-infinite" : ""}`}
 						style={{ opacity: possibilityOpacity }}
 					>
-						<strong>{possibilities}</strong>
-						<p>种颜色的可能</p>
+						<div className="possible-value" key={possibilityPhase}>
+							<strong aria-label={possibilityPhase === "infinity" ? "正无穷" : `${possibilityCount}`}>
+								{possibilityPhase === "infinity" ? "∞" : possibilityCount}
+							</strong>
+							<p>{possibilityPhase === "infinity" ? "有正无穷个可能" : "种颜色的可能"}</p>
+						</div>
 					</div>
 				</section>
 
