@@ -470,6 +470,10 @@ button:focus-visible {
 	letter-spacing: 0;
 	line-height: 0.68;
 }
+.possible-type {
+	transition: opacity 180ms linear;
+	will-change: opacity;
+}
 .possible-type p {
 	margin-top: 4rem;
 }
