@@ -1,13 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { fafaColor, fafaHex, parseBlue, progressToBlue } from "./lib/color";
 import {
-	LIGHT_PHASES,
 	readTodaySpectrum,
-	relatedColors,
 	rememberColor,
 	spectrumLabel,
 	storyFor,
-	type LightPhase,
 } from "./lib/story";
 
 const MOMENTS = [
@@ -172,59 +169,6 @@ function DebugPanel({
 	);
 }
 
-function LightControl({
-	phase,
-	onChange,
-}: {
-	phase: LightPhase;
-	onChange: (phase: LightPhase) => void;
-}) {
-	return (
-		<nav className="light-control" aria-label="Light in the room">
-			{LIGHT_PHASES.map((item) => (
-				<button
-					className={phase === item.id ? "is-selected" : ""}
-					key={item.id}
-					type="button"
-					onClick={() => onChange(item.id)}
-					aria-pressed={phase === item.id}
-				>
-					<span>{item.label}</span>
-					<small>{item.caption}</small>
-				</button>
-			))}
-		</nav>
-	);
-}
-
-function ColorRelations({
-	blue,
-	onPick,
-}: {
-	blue: number;
-	onPick: (blue: number) => void;
-}) {
-	return (
-		<div className="relations" aria-label="Nearby colors">
-			<p>the color around it</p>
-			<div className="relations__swatches">
-				{relatedColors(blue).map((item) => (
-					<button
-						key={item.label}
-						type="button"
-						className={item.blue === blue ? "is-current" : ""}
-						style={{ backgroundColor: fafaColor(item.blue) }}
-						onClick={() => onPick(item.blue)}
-						aria-label={`Choose ${item.label}, ${fafaHex(item.blue)}`}
-					>
-						<span>{item.label}</span>
-					</button>
-				))}
-			</div>
-		</div>
-	);
-}
-
 function Spectrum({ colors, onPick }: { colors: number[]; onPick: (blue: number) => void }) {
 	return (
 		<section className="spectrum" aria-label={`Today spectrum: ${spectrumLabel(colors)}`}>
@@ -260,30 +204,20 @@ export function App() {
 	).matches;
 	const [blue, setBlue] = useState(sharedBlue ?? 0);
 	const [progress, setProgress] = useState(0);
-	const [lockedBlue, setLockedBlue] = useState<number | null>(null);
 	const [copied, setCopied] = useState(false);
 	const [introColor, setIntroColor] = useState(sharedBlue);
 	const [fps, setFps] = useState(60);
-	const [lightPhase, setLightPhase] = useState<LightPhase>(() => {
-		const hour = new Date().getHours();
-		if (hour < 7) return "dawn";
-		if (hour < 17) return "day";
-		if (hour < 21) return "dusk";
-		return "night";
-	});
 	const [spectrum, setSpectrum] = useState<number[]>(() => readTodaySpectrum());
 	const latest = useRef({
 		blue: sharedBlue ?? 0,
 		progress: 0,
-		mouse: 0,
-		locked: null as number | null,
+		manual: null as number | null,
 	});
 	const lastRender = useRef(0);
 	const copyTimer = useRef<number | undefined>(undefined);
 
 	const choose = useCallback((nextBlue: number, remember = true) => {
-		latest.current.locked = nextBlue;
-		setLockedBlue(nextBlue);
+		latest.current.manual = nextBlue;
 		setBlue(nextBlue);
 		document.documentElement.style.setProperty(
 			"--fafa-color",
@@ -294,10 +228,6 @@ export function App() {
 		window.history.replaceState({}, "", url);
 		if (remember) setSpectrum(rememberColor(nextBlue));
 	}, []);
-
-	useEffect(() => {
-		document.documentElement.dataset.light = lightPhase;
-	}, [lightPhase]);
 
 	useEffect(() => {
 		const timeout = window.setTimeout(
@@ -316,15 +246,10 @@ export function App() {
 			);
 			const nextProgress = Math.max(0, Math.min(1, window.scrollY / maxScroll));
 			const baseBlue = progressToBlue(nextProgress);
-			const breathing = reducedMotion
-				? 0
-				: Math.round(Math.sin(time / 7800) * 1);
-			const mouseOffset = reducedMotion
-				? 0
-				: Math.round(latest.current.mouse * 5);
-			const nextBlue =
-				latest.current.locked ??
-				Math.max(0, Math.min(255, baseBlue + mouseOffset + breathing));
+			if (Math.abs(nextProgress - latest.current.progress) > 0.00001) {
+				latest.current.manual = null;
+			}
+			const nextBlue = latest.current.manual ?? baseBlue;
 			latest.current.blue = nextBlue;
 			latest.current.progress = nextProgress;
 			document.documentElement.style.setProperty(
@@ -352,14 +277,9 @@ export function App() {
 			raf = requestAnimationFrame(paint);
 		};
 
-		const move = (event: PointerEvent) => {
-			latest.current.mouse = event.clientY / window.innerHeight - 0.5;
-		};
-		window.addEventListener("pointermove", move, { passive: true });
 		raf = requestAnimationFrame(paint);
 		return () => {
 			window.clearTimeout(timeout);
-			window.removeEventListener("pointermove", move);
 			cancelAnimationFrame(raf);
 		};
 	}, [reducedMotion]);
@@ -381,7 +301,6 @@ export function App() {
 	return (
 		<main className="artwork">
 			<div className="atmosphere" aria-hidden="true" />
-			<LightControl phase={lightPhase} onChange={setLightPhase} />
 			{introColor !== null && (
 				<div className="shared-opening" aria-live="polite">
 					<span>{fafaHex(introColor)}</span>
@@ -433,9 +352,7 @@ export function App() {
 							<br />
 							fafa is a range, held in this light.
 						</p>
-						{lockedBlue !== null && (
-							<p className="lock-note">this one. {copied && "copied"}</p>
-						)}
+						{copied && <p className="lock-note">link copied</p>}
 					</div>
 					<p className="scroll-mark">
 						{Math.round(progress * 100)}%&nbsp;&nbsp; / &nbsp;&nbsp;
@@ -457,7 +374,6 @@ export function App() {
 					<div className="scene__center color-story">
 						<p className="story-kicker">{fafaHex(blue)} / {title}</p>
 						<h2>{line}.</h2>
-						<ColorRelations blue={blue} onPick={choose} />
 						<Spectrum colors={spectrum} onPick={choose} />
 					</div>
 				</section>
@@ -482,9 +398,9 @@ export function App() {
 						<small>neither are we.</small>
 					</div>
 					<p className="ending-index">
-						00 — FF
+						{fafaHex(blue)}
 						<br />
-						256 possibilities
+						FF / the limit
 					</p>
 				</section>
 			</div>

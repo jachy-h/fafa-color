@@ -1,18 +1,5 @@
 import { clampBlue, fafaHex } from "./color";
 
-export type LightPhase = "dawn" | "day" | "dusk" | "night";
-
-export const LIGHT_PHASES: Array<{
-	id: LightPhase;
-	label: string;
-	caption: string;
-}> = [
-	{ id: "dawn", label: "dawn", caption: "first warmth" },
-	{ id: "day", label: "day", caption: "clear light" },
-	{ id: "dusk", label: "dusk", caption: "blue hour" },
-	{ id: "night", label: "night", caption: "afterglow" },
-];
-
 const STORIES = [
 	["lemon before noon", "a bright thought held close"],
 	["a window left open", "warm air, almost still"],
@@ -30,15 +17,6 @@ const MEMORY_LIMIT = 7;
 export function storyFor(blue: number) {
 	const safeBlue = clampBlue(blue);
 	return STORIES[Math.min(STORIES.length - 1, Math.floor(safeBlue / 32))];
-}
-
-export function relatedColors(blue: number): Array<{ label: string; blue: number }> {
-	const safeBlue = clampBlue(blue);
-	return [
-		{ label: "shadow", blue: clampBlue(safeBlue - 28) },
-		{ label: "this light", blue: safeBlue },
-		{ label: "after light", blue: clampBlue(safeBlue + 28) },
-	];
 }
 
 export function readTodaySpectrum(): number[] {

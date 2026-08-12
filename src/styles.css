@@ -14,14 +14,7 @@
 	--soft-ink: color-mix(in oklab, var(--ink-color) 62%, transparent);
 	--paper-sheen: color-mix(in oklab, #ffffff 30%, var(--fafa-color));
 	--ink-opacity: 0.88;
-	--light-tint: #fff0bf;
-	--light-shadow: #b8d8ff;
 }
-
-:root[data-light="dawn"] { --light-tint: #fff0bf; --light-shadow: #e8b9cc; }
-:root[data-light="day"] { --light-tint: #ffffff; --light-shadow: #b8d8ff; }
-:root[data-light="dusk"] { --light-tint: #ffd0b0; --light-shadow: #8495d6; }
-:root[data-light="night"] { --light-tint: #d7ddff; --light-shadow: #535785; }
 
 * {
 	box-sizing: border-box;
@@ -65,9 +58,9 @@ button:focus-visible {
 	background:
 		linear-gradient(
 			115deg,
-			color-mix(in oklab, var(--fafa-color), var(--light-tint) 19%),
+			color-mix(in oklab, var(--fafa-color), white 19%),
 			var(--fafa-color) 44%,
-			color-mix(in oklab, var(--fafa-color), var(--light-shadow) 18%)
+			color-mix(in oklab, var(--fafa-color), #b8d8ff 18%)
 		);
 	transition: background 950ms linear;
 }
@@ -95,9 +88,9 @@ button:focus-visible {
 	background:
 		linear-gradient(
 			180deg,
-			color-mix(in oklab, var(--fafa-color), var(--light-tint) 16%),
+			color-mix(in oklab, var(--fafa-color), white 16%),
 			var(--fafa-color) 46%,
-			color-mix(in oklab, var(--fafa-color), var(--light-shadow) 12%)
+			color-mix(in oklab, var(--fafa-color), #dfeaff 12%)
 		);
 	transition:
 		background 950ms linear,
@@ -138,38 +131,6 @@ button:focus-visible {
 .scene > * {
 	pointer-events: auto;
 }
-.light-control {
-	position: fixed;
-	top: max(1rem, env(safe-area-inset-top));
-	left: 50%;
-	z-index: 25;
-	display: flex;
-	width: min(92vw, 480px);
-	transform: translateX(-50%);
-	border: 1px solid color-mix(in oklab, var(--ink-color), transparent 78%);
-	background: color-mix(in oklab, var(--fafa-color), white 24%);
-	box-shadow: 0 12px 34px rgba(24, 25, 35, 0.08);
-	backdrop-filter: blur(12px);
-}
-.light-control button {
-	position: relative;
-	flex: 1;
-	min-width: 0;
-	border: 0;
-	border-right: 1px solid color-mix(in oklab, var(--ink-color), transparent 88%);
-	padding: 0.5rem 0.35rem 0.45rem;
-	background: transparent;
-	color: inherit;
-	cursor: pointer;
-	transition: background-color 260ms ease, color 260ms ease;
-}
-.light-control button:last-child { border-right: 0; }
-.light-control button:hover,
-.light-control button.is-selected { background: color-mix(in oklab, var(--ink-color), transparent 90%); }
-.light-control span,
-.light-control small { display: block; }
-.light-control span { font: 500 10px "DM Mono", monospace; letter-spacing: 0.08em; }
-.light-control small { margin-top: 0.2rem; font-size: 8px; opacity: 0.58; letter-spacing: 0.04em; }
 .scene__center {
 	text-align: center;
 }
@@ -476,16 +437,9 @@ button:focus-visible {
 .color-story { width: min(82vw, 680px); text-align: center; }
 .story-kicker { margin: 0; font: 10px "DM Mono", monospace; letter-spacing: 0.14em; opacity: 0.65; }
 .color-story h2 { max-width: 620px; margin: 1.4rem auto 0; font-size: clamp(32px, 5vw, 66px); font-weight: 500; line-height: 1.03; letter-spacing: 0; }
-.relations { margin-top: 3rem; }
-.relations > p,
 .spectrum__heading p,
 .spectrum__heading span { margin: 0; font: 10px "DM Mono", monospace; letter-spacing: 0.1em; opacity: 0.6; }
-.relations__swatches { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; margin: 0.9rem auto 0; border: 1px solid color-mix(in oklab, var(--ink-color), transparent 84%); }
-.relations__swatches button { aspect-ratio: 2.6 / 1; border: 0; color: rgba(17, 17, 22, 0.72); cursor: pointer; transition: transform 220ms ease, filter 220ms ease; }
-.relations__swatches button:hover { filter: saturate(1.25); transform: translateY(-3px); }
-.relations__swatches button.is-current { outline: 1px solid rgba(17, 17, 22, 0.55); outline-offset: -5px; }
-.relations__swatches span { font: 10px "DM Mono", monospace; letter-spacing: 0.06em; opacity: 0.72; }
-.spectrum { margin: 2.7rem auto 0; text-align: left; }
+.spectrum { margin: 3rem auto 0; text-align: left; }
 .spectrum__heading { display: flex; justify-content: space-between; align-items: center; }
 .spectrum__colors { display: flex; height: 34px; margin-top: 0.65rem; border: 1px solid color-mix(in oklab, var(--ink-color), transparent 84%); }
 .spectrum__colors button { flex: 1; min-width: 12px; border: 0; cursor: pointer; transition: flex-grow 260ms ease, filter 260ms ease; }
@@ -631,11 +585,8 @@ button:focus-visible {
 	.equation {
 		font-size: clamp(28px, 8.2vw, 48px);
 	}
-	.light-control { width: calc(100vw - 2rem); }
-	.light-control small { display: none; }
 	.color-story { width: min(88vw, 520px); }
 	.color-story h2 { font-size: clamp(31px, 9vw, 46px); }
-	.relations { margin-top: 2.2rem; }
 	.possible-type strong {
 		font-size: clamp(160px, 49vw, 300px);
 	}
