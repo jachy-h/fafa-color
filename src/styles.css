@@ -94,9 +94,23 @@ button:focus-visible {
 	opacity: 0.9;
 }
 .sound-toggle:hover { transform: translateY(-2px); }
-.sound-toggle.is-playing span { display: inline-block; animation: sound-pulse 1.8s ease-in-out infinite; }
-@keyframes sound-pulse {
-	50% { transform: translateY(-1px); opacity: 0.45; }
+.sound-toggle__note { display: inline-block; transform-origin: 50% 52%; }
+.sound-toggle.is-playing .sound-toggle__note { animation: sound-spin 2.8s linear infinite; }
+.sound-toggle__slash {
+	position: absolute;
+	top: 4px;
+	left: 13px;
+	width: 1px;
+	height: 22px;
+	background: currentColor;
+	transform: rotate(45deg);
+	transform-origin: center;
+	opacity: 0;
+	transition: opacity 180ms ease;
+}
+.sound-toggle.is-muted .sound-toggle__slash { opacity: 0.82; }
+@keyframes sound-spin {
+	to { transform: rotate(360deg); }
 }
 .atmosphere,
 .grain {
@@ -500,15 +514,6 @@ button:focus-visible {
 	from { opacity: 0; filter: blur(8px); transform: translateY(13px); }
 	to { opacity: 1; filter: blur(0); transform: translateY(0); }
 }
-.spectrum__heading p,
-.spectrum__heading span { margin: 0; font: 10px "DM Mono", monospace; letter-spacing: 0.1em; opacity: 0.6; }
-.spectrum { margin: 3rem auto 0; text-align: left; }
-.spectrum__heading { display: flex; justify-content: space-between; align-items: center; }
-.spectrum__colors { display: flex; height: 34px; margin-top: 0.65rem; border: 1px solid color-mix(in oklab, var(--ink-color), transparent 84%); }
-.spectrum__colors button { flex: 1; min-width: 12px; border: 0; cursor: pointer; transition: flex-grow 260ms ease, filter 260ms ease; }
-.spectrum__colors button:hover { flex-grow: 1.8; filter: saturate(1.22) brightness(1.02); }
-.spectrum__empty { display: grid; width: 100%; place-items: center; font: 9px "DM Mono", monospace; letter-spacing: 0.08em; opacity: 0.52; }
-
 .scene--possibilities {
 	margin-top: 22vh;
 }

@@ -1,12 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { fafaColor, fafaHex, progressToBlue } from "./lib/color";
-import {
-	colorNameFor,
-	readTodaySpectrum,
-	rememberColor,
-	spectrumLabel,
-	storyFor,
-} from "./lib/story";
+import { colorNameFor, storyFor } from "./lib/story";
 
 const MOMENTS = [
 	{ at: 0, word: "起点" },
@@ -172,32 +166,6 @@ function DebugPanel({
 	);
 }
 
-function Spectrum({ colors, onPick }: { colors: number[]; onPick: (blue: number) => void }) {
-	return (
-		<section className="spectrum" aria-label={`今日色谱：${spectrumLabel(colors)}`}>
-			<div className="spectrum__heading">
-				<p>今日色谱</p>
-				<span>已留存 {colors.length}/7</span>
-			</div>
-			<div className="spectrum__colors">
-				{colors.length > 0 ? (
-					colors.map((item) => (
-						<button
-							key={item}
-							type="button"
-							style={{ backgroundColor: fafaColor(item) }}
-							onClick={() => onPick(item)}
-							aria-label={`回到 ${fafaHex(item)}`}
-						/>
-					))
-				) : (
-					<span className="spectrum__empty">选择一种颜色，留下痕迹</span>
-				)}
-			</div>
-		</section>
-	);
-}
-
 export function App() {
 	const params = new URLSearchParams(window.location.search);
 	const debug = params.get("debug") === "true";
@@ -209,11 +177,11 @@ export function App() {
 	const [copied, setCopied] = useState(false);
 	const [soundOn, setSoundOn] = useState(false);
 	const [fps, setFps] = useState(60);
-	const [spectrum, setSpectrum] = useState<number[]>(() => readTodaySpectrum());
 	const [storyBlue, setStoryBlue] = useState(0);
 	const [possibilityCount, setPossibilityCount] = useState(0);
 	const possibilitySequenceStarted = useRef(false);
 	const audioRef = useRef<HTMLAudioElement>(null);
+	const audioUnlocked = useRef(false);
 	const latest = useRef({
 		blue: 0,
 		progress: 0,
@@ -223,14 +191,13 @@ export function App() {
 	const lastRender = useRef(0);
 	const copyTimer = useRef<number | undefined>(undefined);
 
-	const choose = useCallback((nextBlue: number, remember = true) => {
+	const choose = useCallback((nextBlue: number) => {
 		latest.current.manual = nextBlue;
 		setBlue(nextBlue);
 		document.documentElement.style.setProperty(
 			"--fafa-color",
 			fafaColor(nextBlue),
 		);
-		if (remember) setSpectrum(rememberColor(nextBlue));
 	}, []);
 
 	useEffect(() => {
@@ -305,7 +272,6 @@ export function App() {
 	}, [reducedMotion]);
 
 	const copyCurrent = async () => {
-		setSpectrum(rememberColor(blue));
 		try {
 			await navigator.clipboard.writeText(window.location.href);
 			setCopied(true);
@@ -315,6 +281,48 @@ export function App() {
 			setCopied(true);
 		}
 	};
+
+	useEffect(() => {
+		const audio = audioRef.current;
+		if (!audio) return;
+		audio.volume = 1;
+		void audio.play().then(
+			() => {
+				audioUnlocked.current = true;
+				setSoundOn(true);
+			},
+			() => setSoundOn(false),
+		);
+	}, []);
+
+	useEffect(() => {
+		const startFromFirstInteraction = () => {
+			if (audioUnlocked.current) return;
+			const audio = audioRef.current;
+			if (!audio) return;
+			void audio.play().then(
+				() => {
+					audioUnlocked.current = true;
+					setSoundOn(true);
+				},
+				() => setSoundOn(false),
+			);
+		};
+
+		window.addEventListener("pointerdown", startFromFirstInteraction, { passive: true });
+		window.addEventListener("touchstart", startFromFirstInteraction, { passive: true });
+		window.addEventListener("wheel", startFromFirstInteraction, { passive: true });
+		window.addEventListener("keydown", startFromFirstInteraction);
+		window.addEventListener("scroll", startFromFirstInteraction, { passive: true });
+
+		return () => {
+			window.removeEventListener("pointerdown", startFromFirstInteraction);
+			window.removeEventListener("touchstart", startFromFirstInteraction);
+			window.removeEventListener("wheel", startFromFirstInteraction);
+			window.removeEventListener("keydown", startFromFirstInteraction);
+			window.removeEventListener("scroll", startFromFirstInteraction);
+		};
+	}, []);
 
 	const toggleSound = async () => {
 		const audio = audioRef.current;
@@ -326,6 +334,7 @@ export function App() {
 		}
 		try {
 			await audio.play();
+			audioUnlocked.current = true;
 			setSoundOn(true);
 		} catch {
 			setSoundOn(false);
@@ -366,7 +375,15 @@ export function App() {
 
 	return (
 		<main className="artwork">
-			<audio ref={audioRef} src="./audio/fafa-ambient.mp3" loop preload="metadata" />
+			<audio
+				ref={audioRef}
+				src="./audio/fafa-ambient.mp3"
+				loop
+				autoPlay
+				preload="auto"
+				onPlay={() => setSoundOn(true)}
+				onPause={() => setSoundOn(false)}
+			/>
 			<div className="atmosphere" aria-hidden="true" />
 			<div className="grain" aria-hidden="true" />
 			<p className="color-caption" aria-live="polite">
@@ -374,13 +391,14 @@ export function App() {
 				<small>{fafaHex(blue)}</small>
 			</p>
 			<button
-				className={`sound-toggle ${soundOn ? "is-playing" : ""}`}
+				className={`sound-toggle ${soundOn ? "is-playing" : "is-muted"}`}
 				type="button"
 				onClick={toggleSound}
 				aria-label={soundOn ? "关闭环境音" : "播放环境音"}
 				title={soundOn ? "关闭环境音" : "播放环境音"}
 			>
-				<span aria-hidden="true">♪</span>
+				<span className="sound-toggle__note" aria-hidden="true">♪</span>
+				<span className="sound-toggle__slash" aria-hidden="true" />
 			</button>
 
 			<div
@@ -418,7 +436,7 @@ export function App() {
 						<button
 							className="hex-button"
 							onClick={copyCurrent}
-							aria-label={`留存 ${fafaHex(blue)} 并复制页面链接`}
+							aria-label={`复制 ${fafaHex(blue)} 对应的页面链接`}
 						>
 							<Counter blue={blue} />
 						</button>
@@ -459,7 +477,6 @@ export function App() {
 								<h2>{storyLine}。</h2>
 							</div>
 						</div>
-						<Spectrum colors={spectrum} onPick={choose} />
 					</div>
 				</section>
 
