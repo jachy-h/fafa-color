@@ -1,5 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { fafaColor, fafaHex, parseBlue, progressToBlue } from "./lib/color";
+import {
+	LIGHT_PHASES,
+	readTodaySpectrum,
+	relatedColors,
+	rememberColor,
+	spectrumLabel,
+	storyFor,
+	type LightPhase,
+} from "./lib/story";
 
 const MOMENTS = [
 	{ at: 0, word: "beginning" },
@@ -73,11 +82,6 @@ function ColorField({
 		setHovered(blueFromClientY(clientY));
 	};
 
-	const chooseFromPointer = (clientY: number) => {
-		const nextBlue = blueFromClientY(clientY);
-		if (nextBlue !== null) onPick(nextBlue);
-	};
-
 	const stepActive = (event: React.KeyboardEvent<HTMLDivElement>) => {
 		const steps: Record<string, number> = {
 			ArrowUp: -1,
@@ -108,7 +112,6 @@ function ColorField({
 				aria-valuenow={activeBlue}
 				aria-valuetext={fafaHex(activeBlue)}
 				onPointerMove={(event) => updateHover(event.clientY)}
-				onPointerDown={(event) => chooseFromPointer(event.clientY)}
 				onPointerLeave={() => setHovered(null)}
 				onKeyDown={stepActive}
 			>
@@ -169,6 +172,85 @@ function DebugPanel({
 	);
 }
 
+function LightControl({
+	phase,
+	onChange,
+}: {
+	phase: LightPhase;
+	onChange: (phase: LightPhase) => void;
+}) {
+	return (
+		<nav className="light-control" aria-label="Light in the room">
+			{LIGHT_PHASES.map((item) => (
+				<button
+					className={phase === item.id ? "is-selected" : ""}
+					key={item.id}
+					type="button"
+					onClick={() => onChange(item.id)}
+					aria-pressed={phase === item.id}
+				>
+					<span>{item.label}</span>
+					<small>{item.caption}</small>
+				</button>
+			))}
+		</nav>
+	);
+}
+
+function ColorRelations({
+	blue,
+	onPick,
+}: {
+	blue: number;
+	onPick: (blue: number) => void;
+}) {
+	return (
+		<div className="relations" aria-label="Nearby colors">
+			<p>the color around it</p>
+			<div className="relations__swatches">
+				{relatedColors(blue).map((item) => (
+					<button
+						key={item.label}
+						type="button"
+						className={item.blue === blue ? "is-current" : ""}
+						style={{ backgroundColor: fafaColor(item.blue) }}
+						onClick={() => onPick(item.blue)}
+						aria-label={`Choose ${item.label}, ${fafaHex(item.blue)}`}
+					>
+						<span>{item.label}</span>
+					</button>
+				))}
+			</div>
+		</div>
+	);
+}
+
+function Spectrum({ colors, onPick }: { colors: number[]; onPick: (blue: number) => void }) {
+	return (
+		<section className="spectrum" aria-label={`Today spectrum: ${spectrumLabel(colors)}`}>
+			<div className="spectrum__heading">
+				<p>today's spectrum</p>
+				<span>{colors.length}/7 held</span>
+			</div>
+			<div className="spectrum__colors">
+				{colors.length > 0 ? (
+					colors.map((item) => (
+						<button
+							key={item}
+							type="button"
+							style={{ backgroundColor: fafaColor(item) }}
+							onClick={() => onPick(item)}
+							aria-label={`Return to ${fafaHex(item)}`}
+						/>
+					))
+				) : (
+					<span className="spectrum__empty">choose a color to leave a trace</span>
+				)}
+			</div>
+		</section>
+	);
+}
+
 export function App() {
 	const params = new URLSearchParams(window.location.search);
 	const sharedBlue = parseBlue(params.get("b"));
@@ -182,6 +264,14 @@ export function App() {
 	const [copied, setCopied] = useState(false);
 	const [introColor, setIntroColor] = useState(sharedBlue);
 	const [fps, setFps] = useState(60);
+	const [lightPhase, setLightPhase] = useState<LightPhase>(() => {
+		const hour = new Date().getHours();
+		if (hour < 7) return "dawn";
+		if (hour < 17) return "day";
+		if (hour < 21) return "dusk";
+		return "night";
+	});
+	const [spectrum, setSpectrum] = useState<number[]>(() => readTodaySpectrum());
 	const latest = useRef({
 		blue: sharedBlue ?? 0,
 		progress: 0,
@@ -191,7 +281,7 @@ export function App() {
 	const lastRender = useRef(0);
 	const copyTimer = useRef<number | undefined>(undefined);
 
-	const choose = useCallback((nextBlue: number) => {
+	const choose = useCallback((nextBlue: number, remember = true) => {
 		latest.current.locked = nextBlue;
 		setLockedBlue(nextBlue);
 		setBlue(nextBlue);
@@ -202,7 +292,12 @@ export function App() {
 		const url = new URL(window.location.href);
 		url.searchParams.set("b", nextBlue.toString(16).padStart(2, "0"));
 		window.history.replaceState({}, "", url);
+		if (remember) setSpectrum(rememberColor(nextBlue));
 	}, []);
+
+	useEffect(() => {
+		document.documentElement.dataset.light = lightPhase;
+	}, [lightPhase]);
 
 	useEffect(() => {
 		const timeout = window.setTimeout(
@@ -281,9 +376,12 @@ export function App() {
 		}
 	};
 
+	const [title, line] = storyFor(blue);
+
 	return (
 		<main className="artwork">
 			<div className="atmosphere" aria-hidden="true" />
+			<LightControl phase={lightPhase} onChange={setLightPhase} />
 			{introColor !== null && (
 				<div className="shared-opening" aria-live="polite">
 					<span>{fafaHex(introColor)}</span>
@@ -322,7 +420,7 @@ export function App() {
 
 				<section className="scene scene--range" aria-label="The color range">
 					<div className="range-display">
-						<p className="range-note">{closestMoment(blue)}</p>
+						<p className="range-note">{closestMoment(blue)} / {title}</p>
 						<button
 							className="hex-button"
 							onClick={copyCurrent}
@@ -331,9 +429,9 @@ export function App() {
 							<Counter blue={blue} />
 						</button>
 						<p className="range-statement">
-							fafa is not a color.
+							{line}.
 							<br />
-							fafa is a range.
+							fafa is a range, held in this light.
 						</p>
 						{lockedBlue !== null && (
 							<p className="lock-note">this one. {copied && "copied"}</p>
@@ -354,14 +452,13 @@ export function App() {
 
 				<section
 					className="scene scene--deconstruct"
-					aria-label="The name, decoded"
+					aria-label="The color, in context"
 				>
-					<div className="scene__center equation">
-						<span>fafa</span>
-						<span>= FA FA</span>
-						<span>= 250 250</span>
-						<span>= #FAFA__</span>
-						<p>A name with one channel left open.</p>
+					<div className="scene__center color-story">
+						<p className="story-kicker">{fafaHex(blue)} / {title}</p>
+						<h2>{line}.</h2>
+						<ColorRelations blue={blue} onPick={choose} />
+						<Spectrum colors={spectrum} onPick={choose} />
 					</div>
 				</section>
 
