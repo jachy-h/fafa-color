@@ -11,12 +11,23 @@ const STORIES = [
 	["雪接住了光", "地平线又一次开始"],
 ] as const;
 
+const COLOR_NAMES = [
+	"柠檬", "晨雾", "薄荷", "春茶",
+	"湖色", "天青", "水汽", "微蓝",
+	"棉絮", "月白", "夜蓝", "靛影",
+	"星尘", "霜色", "雪光", "极昼",
+] as const;
+
 const MEMORY_KEY = "fafa:today-spectrum";
 const MEMORY_LIMIT = 7;
 
 export function storyFor(blue: number) {
 	const safeBlue = clampBlue(blue);
 	return STORIES[Math.min(STORIES.length - 1, Math.floor(safeBlue / 32))];
+}
+
+export function colorNameFor(blue: number): string {
+	return COLOR_NAMES[Math.min(COLOR_NAMES.length - 1, Math.floor(clampBlue(blue) / 16))];
 }
 
 export function readTodaySpectrum(): number[] {

@@ -50,6 +50,17 @@ button:focus-visible {
 		transparent
 	);
 }
+.color-caption {
+	position: fixed;
+	left: max(1.25rem, env(safe-area-inset-left));
+	bottom: max(1.2rem, env(safe-area-inset-bottom));
+	z-index: 24;
+	margin: 0;
+	font: 10px "DM Mono", "PingFang SC", monospace;
+	letter-spacing: 0.08em;
+	opacity: 0.52;
+	pointer-events: none;
+}
 .atmosphere,
 .grain {
 	position: fixed;

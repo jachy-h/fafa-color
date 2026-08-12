@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { fafaColor, fafaHex, progressToBlue } from "./lib/color";
 import {
+	colorNameFor,
 	readTodaySpectrum,
 	rememberColor,
 	spectrumLabel,
@@ -317,6 +318,7 @@ export function App() {
 	};
 
 	const [title, line] = storyFor(blue);
+	const colorName = colorNameFor(blue);
 	const [storyTitle, storyLine] = storyFor(storyBlue);
 	const storyFirstFade = Math.max(0, Math.min(1, (0.69 - progress) / 0.07));
 	const storyCopyOpacity = storyBlue === STORY_BEATS[0] ? storyFirstFade : 1;
@@ -362,6 +364,9 @@ export function App() {
 		<main className="artwork">
 			<div className="atmosphere" aria-hidden="true" />
 			<div className="grain" aria-hidden="true" />
+			<p className="color-caption" aria-live="polite">
+				{colorName}: {fafaHex(blue)}
+			</p>
 
 			<div
 				className="canvas"
