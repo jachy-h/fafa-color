@@ -207,11 +207,13 @@ export function App() {
 	const [blue, setBlue] = useState(0);
 	const [progress, setProgress] = useState(0);
 	const [copied, setCopied] = useState(false);
+	const [soundOn, setSoundOn] = useState(false);
 	const [fps, setFps] = useState(60);
 	const [spectrum, setSpectrum] = useState<number[]>(() => readTodaySpectrum());
 	const [storyBlue, setStoryBlue] = useState(0);
 	const [possibilityCount, setPossibilityCount] = useState(0);
 	const possibilitySequenceStarted = useRef(false);
+	const audioRef = useRef<HTMLAudioElement>(null);
 	const latest = useRef({
 		blue: 0,
 		progress: 0,
@@ -314,6 +316,22 @@ export function App() {
 		}
 	};
 
+	const toggleSound = async () => {
+		const audio = audioRef.current;
+		if (!audio) return;
+		if (soundOn) {
+			audio.pause();
+			setSoundOn(false);
+			return;
+		}
+		try {
+			await audio.play();
+			setSoundOn(true);
+		} catch {
+			setSoundOn(false);
+		}
+	};
+
 	const [title, line] = storyFor(blue);
 	const colorName = colorNameFor(blue);
 	const [storyTitle, storyLine] = storyFor(storyBlue);
@@ -348,12 +366,22 @@ export function App() {
 
 	return (
 		<main className="artwork">
+			<audio ref={audioRef} src="./audio/fafa-ambient.mp3" loop preload="metadata" />
 			<div className="atmosphere" aria-hidden="true" />
 			<div className="grain" aria-hidden="true" />
 			<p className="color-caption" aria-live="polite">
 				<span>{colorName}</span>
 				<small>{fafaHex(blue)}</small>
 			</p>
+			<button
+				className={`sound-toggle ${soundOn ? "is-playing" : ""}`}
+				type="button"
+				onClick={toggleSound}
+				aria-label={soundOn ? "关闭环境音" : "播放环境音"}
+				title={soundOn ? "关闭环境音" : "播放环境音"}
+			>
+				<span aria-hidden="true">♪</span>
+			</button>
 
 			<div
 				className="canvas"
