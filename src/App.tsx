@@ -297,6 +297,7 @@ export function App() {
 	};
 
 	const [title, line] = storyFor(blue);
+	const possibilities = 256 - blue;
 
 	return (
 		<main className="artwork">
@@ -383,7 +384,7 @@ export function App() {
 					aria-label="256 种可能"
 				>
 					<div className="scene__center possible-type">
-						<strong>{blue > 224 ? 256 - blue : 256}</strong>
+						<strong>{possibilities}</strong>
 						<p>种颜色的可能</p>
 					</div>
 				</section>
