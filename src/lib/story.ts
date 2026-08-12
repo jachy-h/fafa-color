@@ -1,14 +1,14 @@
 import { clampBlue, fafaHex } from "./color";
 
 const STORIES = [
-	["lemon before noon", "a bright thought held close"],
-	["a window left open", "warm air, almost still"],
-	["glass after rain", "the room remembers sky"],
-	["green tea in shade", "a small pause in the day"],
-	["lake, not moving", "light settles on the surface"],
-	["cotton under moonlight", "softness without a name"],
-	["a blue held quietly", "the last sound before dark"],
-	["snow taking light", "the horizon begins again"],
+	["正午前的柠檬", "一束明亮的念头，被轻轻握住"],
+	["一扇未合的窗", "暖风掠过，房间没有说话"],
+	["雨后的玻璃", "天空还留在屋里"],
+	["树荫里的春茶", "白昼有了片刻停顿"],
+	["静止的湖面", "光慢慢落在水上"],
+	["月光下的棉絮", "柔软，不必命名"],
+	["被安静留住的蓝", "天黑前，最后一点声响"],
+	["雪接住了光", "地平线又一次开始"],
 ] as const;
 
 const MEMORY_KEY = "fafa:today-spectrum";
@@ -46,6 +46,6 @@ export function rememberColor(blue: number): number[] {
 
 export function spectrumLabel(colors: number[]): string {
 	return colors.length === 0
-		? "nothing held yet"
+		? "尚未留存颜色"
 		: colors.map((blue) => fafaHex(blue)).join(", ");
 }

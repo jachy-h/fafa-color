@@ -8,15 +8,15 @@ import {
 } from "./lib/story";
 
 const MOMENTS = [
-	{ at: 0, word: "beginning" },
-	{ at: 32, word: "warm" },
-	{ at: 64, word: "awake" },
-	{ at: 96, word: "afternoon" },
-	{ at: 128, word: "somewhere between" },
-	{ at: 160, word: "quiet" },
-	{ at: 192, word: "almost memory" },
-	{ at: 224, word: "fading" },
-	{ at: 255, word: "light" },
+	{ at: 0, word: "起点" },
+	{ at: 32, word: "暖意" },
+	{ at: 64, word: "初醒" },
+	{ at: 96, word: "午后" },
+	{ at: 128, word: "介于之间" },
+	{ at: 160, word: "静下来" },
+	{ at: 192, word: "像一段记忆" },
+	{ at: 224, word: "渐渐褪去" },
+	{ at: 255, word: "光" },
 ];
 
 function closestMoment(blue: number): string {
@@ -38,7 +38,7 @@ function sceneFor(progress: number): string {
 function Counter({ blue }: { blue: number }) {
 	const characters = fafaHex(blue).slice(-2).split("");
 	return (
-		<span className="counter" aria-label={`Current color ${fafaHex(blue)}`}>
+		<span className="counter" aria-label={`当前颜色 ${fafaHex(blue)}`}>
 			<span className="stable">#FAFA</span>
 			{characters.map((character, index) => (
 				<span className="counter__digit" key={index} aria-hidden="true">
@@ -96,14 +96,14 @@ function ColorField({
 	const reading = hovered ?? activeBlue;
 
 	return (
-		<section className="color-field" aria-label="All 256 FAFA colors">
+		<section className="color-field" aria-label="全部 256 种 FAFA 颜色">
 			<p className="field-index">00 — FF / 256</p>
 			<div
 				className="color-field__lines"
 				ref={fieldRef}
 				role="slider"
 				tabIndex={0}
-				aria-label="Blue channel"
+				aria-label="蓝色通道"
 				aria-valuemin={0}
 				aria-valuemax={255}
 				aria-valuenow={activeBlue}
@@ -133,7 +133,7 @@ function ColorField({
 						className={`color-line ${hovered === blue ? "is-hovered" : ""} ${activeBlue === blue ? "is-active" : ""}`}
 						key={blue}
 						style={{ backgroundColor: fafaColor(blue) }}
-						aria-label={`Choose ${fafaHex(blue)}`}
+						aria-label={`选择 ${fafaHex(blue)}`}
 						tabIndex={activeBlue === blue ? 0 : -1}
 						onFocus={() => setHovered(blue)}
 						onClick={() => onPick(blue)}
@@ -159,7 +159,7 @@ function DebugPanel({
 	scene: string;
 }) {
 	return (
-		<aside className="debug" aria-label="Debug information">
+		<aside className="debug" aria-label="调试信息">
 			<span>scroll&nbsp;&nbsp;&nbsp; {progress.toFixed(3)}</span>
 			<span>blue&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {blue}</span>
 			<span>hex&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {fafaHex(blue)}</span>
@@ -171,10 +171,10 @@ function DebugPanel({
 
 function Spectrum({ colors, onPick }: { colors: number[]; onPick: (blue: number) => void }) {
 	return (
-		<section className="spectrum" aria-label={`Today spectrum: ${spectrumLabel(colors)}`}>
+		<section className="spectrum" aria-label={`今日色谱：${spectrumLabel(colors)}`}>
 			<div className="spectrum__heading">
-				<p>today's spectrum</p>
-				<span>{colors.length}/7 held</span>
+				<p>今日色谱</p>
+				<span>已留存 {colors.length}/7</span>
 			</div>
 			<div className="spectrum__colors">
 				{colors.length > 0 ? (
@@ -184,11 +184,11 @@ function Spectrum({ colors, onPick }: { colors: number[]; onPick: (blue: number)
 							type="button"
 							style={{ backgroundColor: fafaColor(item) }}
 							onClick={() => onPick(item)}
-							aria-label={`Return to ${fafaHex(item)}`}
+							aria-label={`回到 ${fafaHex(item)}`}
 						/>
 					))
 				) : (
-					<span className="spectrum__empty">choose a color to leave a trace</span>
+					<span className="spectrum__empty">选择一种颜色，留下痕迹</span>
 				)}
 			</div>
 		</section>
@@ -310,12 +310,12 @@ export function App() {
 
 			<div
 				className="canvas"
-				aria-label="FAFA, a scrollable digital color artwork"
+				aria-label="FAFA，一件可滚动的数字色彩作品"
 			>
 				<section className="scene scene--intro" aria-label="FAFA">
 					<div className="scene__center intro-type">
 						<h1>FAFA</h1>
-						<p>256 shades of a name</p>
+						<p>一个名字的 256 种明暗</p>
 					</div>
 					<div className="intro-hex" aria-hidden="true">
 						#FAFA<span>00</span>
@@ -324,35 +324,35 @@ export function App() {
 
 				<section
 					className="scene scene--missing"
-					aria-label="An open color channel"
+					aria-label="未定义的颜色通道"
 				>
 					<div className="scene__center missing-type">
 						<p className="broken-hex">
 							#FAFA<span>??</span>
 						</p>
-						<p className="microcopy">Something is missing.</p>
+						<p className="microcopy">少了些什么。</p>
 						<p className="rapid-count" aria-hidden="true">
 							00&nbsp;&nbsp;01&nbsp;&nbsp;02&nbsp;&nbsp;03&nbsp;&nbsp;04&nbsp;&nbsp;...
 						</p>
 					</div>
 				</section>
 
-				<section className="scene scene--range" aria-label="The color range">
+				<section className="scene scene--range" aria-label="颜色范围">
 					<div className="range-display">
 						<p className="range-note">{closestMoment(blue)} / {title}</p>
 						<button
 							className="hex-button"
 							onClick={copyCurrent}
-							aria-label={`Lock and copy ${fafaHex(blue)}`}
+							aria-label={`复制 ${fafaHex(blue)} 的链接`}
 						>
 							<Counter blue={blue} />
 						</button>
 						<p className="range-statement">
-							{line}.
+							{line}。
 							<br />
-							fafa is a range, held in this light.
+							FAFA 不是一种颜色，而是一段范围。
 						</p>
-						{copied && <p className="lock-note">link copied</p>}
+						{copied && <p className="lock-note">链接已复制</p>}
 					</div>
 					<p className="scroll-mark">
 						{Math.round(progress * 100)}%&nbsp;&nbsp; / &nbsp;&nbsp;
@@ -362,45 +362,45 @@ export function App() {
 
 				<section
 					className="scene scene--field"
-					aria-label="The complete color field"
+					aria-label="完整色场"
 				>
 					<ColorField activeBlue={blue} onPick={choose} />
 				</section>
 
 				<section
 					className="scene scene--deconstruct"
-					aria-label="The color, in context"
+					aria-label="颜色与记忆"
 				>
 					<div className="scene__center color-story">
 						<p className="story-kicker">{fafaHex(blue)} / {title}</p>
-						<h2>{line}.</h2>
+						<h2>{line}。</h2>
 						<Spectrum colors={spectrum} onPick={choose} />
 					</div>
 				</section>
 
 				<section
 					className="scene scene--possibilities"
-					aria-label="256 possibilities"
+					aria-label="256 种可能"
 				>
 					<div className="scene__center possible-type">
 						<strong>{blue > 224 ? 256 - blue : 256}</strong>
-						<p>possible colors</p>
+						<p>种颜色的可能</p>
 					</div>
 				</section>
 
 				<section
 					className="scene scene--ending"
-					aria-label="The end of the range"
+					aria-label="颜色范围的尽头"
 				>
 					<div className="scene__center ending-type">
 						<h2>FAFA</h2>
-						<p>fafa was never one color.</p>
-						<small>neither are we.</small>
+						<p>FAFA 从来不止一种颜色。</p>
+						<small>我们也是。</small>
 					</div>
 					<p className="ending-index">
 						{fafaHex(blue)}
 						<br />
-						FF / the limit
+						FF / 尽头
 					</p>
 				</section>
 			</div>
