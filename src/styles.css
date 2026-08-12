@@ -444,8 +444,13 @@ button:focus-visible {
 	margin-top: 20vh;
 }
 .color-story { width: min(82vw, 680px); text-align: center; }
+.story-copy { animation: story-settle 960ms cubic-bezier(0.18, 0.78, 0.2, 1) both; }
 .story-kicker { margin: 0; font: 10px "DM Mono", monospace; letter-spacing: 0.14em; opacity: 0.65; }
 .color-story h2 { max-width: 620px; margin: 1.4rem auto 0; font-size: clamp(32px, 5vw, 66px); font-weight: 500; line-height: 1.03; letter-spacing: 0; }
+@keyframes story-settle {
+	from { opacity: 0; filter: blur(8px); transform: translateY(13px); }
+	to { opacity: 1; filter: blur(0); transform: translateY(0); }
+}
 .spectrum__heading p,
 .spectrum__heading span { margin: 0; font: 10px "DM Mono", monospace; letter-spacing: 0.1em; opacity: 0.6; }
 .spectrum { margin: 3rem auto 0; text-align: left; }

@@ -208,10 +208,12 @@ export function App() {
 	const [introColor, setIntroColor] = useState(sharedBlue);
 	const [fps, setFps] = useState(60);
 	const [spectrum, setSpectrum] = useState<number[]>(() => readTodaySpectrum());
+	const [storyBlue, setStoryBlue] = useState(sharedBlue ?? 0);
 	const latest = useRef({
 		blue: sharedBlue ?? 0,
 		progress: 0,
 		manual: null as number | null,
+		storyLatched: false,
 	});
 	const lastRender = useRef(0);
 	const copyTimer = useRef<number | undefined>(undefined);
@@ -246,6 +248,13 @@ export function App() {
 			);
 			const nextProgress = Math.max(0, Math.min(1, window.scrollY / maxScroll));
 			const baseBlue = progressToBlue(nextProgress);
+			const inStoryScene = nextProgress >= 0.62 && nextProgress < 0.84;
+			if (inStoryScene && !latest.current.storyLatched) {
+				latest.current.storyLatched = true;
+				setStoryBlue(baseBlue);
+			} else if (!inStoryScene) {
+				latest.current.storyLatched = false;
+			}
 			if (Math.abs(nextProgress - latest.current.progress) > 0.00001) {
 				latest.current.manual = null;
 			}
@@ -297,6 +306,7 @@ export function App() {
 	};
 
 	const [title, line] = storyFor(blue);
+	const [storyTitle, storyLine] = storyFor(storyBlue);
 	const possibilities = 256 - blue;
 
 	return (
@@ -373,8 +383,10 @@ export function App() {
 					aria-label="颜色与记忆"
 				>
 					<div className="scene__center color-story">
-						<p className="story-kicker">{fafaHex(blue)} / {title}</p>
-						<h2>{line}。</h2>
+						<div className="story-copy" key={storyBlue}>
+							<p className="story-kicker">{fafaHex(storyBlue)} / {storyTitle}</p>
+							<h2>{storyLine}。</h2>
+						</div>
 						<Spectrum colors={spectrum} onPick={choose} />
 					</div>
 				</section>
