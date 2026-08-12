@@ -318,6 +318,8 @@ export function App() {
 
 	const [title, line] = storyFor(blue);
 	const [storyTitle, storyLine] = storyFor(storyBlue);
+	const storyFirstFade = Math.max(0, Math.min(1, (0.69 - progress) / 0.07));
+	const storyCopyOpacity = storyBlue === STORY_BEATS[0] ? storyFirstFade : 1;
 	const possibilitySequenceVisible = progress >= 0.79;
 	const possibilityOpacity = Math.max(0, Math.min(1, (0.9 - progress) / 0.025));
 
@@ -426,8 +428,16 @@ export function App() {
 				>
 					<div className="scene__center color-story">
 						<div className="story-copy" key={storyBlue}>
-							<p className="story-kicker">{fafaHex(storyBlue)} / {storyTitle}</p>
-							<h2>{storyLine}。</h2>
+							<div
+								className="story-copy__content"
+								style={{
+									opacity: storyCopyOpacity,
+									transform: `translateY(${(1 - storyCopyOpacity) * -10}px)`,
+								}}
+							>
+								<p className="story-kicker">{fafaHex(storyBlue)} / {storyTitle}</p>
+								<h2>{storyLine}。</h2>
+							</div>
 						</div>
 						<Spectrum colors={spectrum} onPick={choose} />
 					</div>
