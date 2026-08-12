@@ -347,7 +347,7 @@ export function App() {
 			} else {
 				infinityTimer = window.setTimeout(
 					() => setPossibilityPhase("infinity"),
-					reducedMotion ? 0 : 120,
+					reducedMotion ? 0 : 70,
 				);
 			}
 		};
