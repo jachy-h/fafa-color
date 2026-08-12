@@ -389,7 +389,7 @@ button:focus-visible {
 }
 .field-cursor {
 	position: absolute;
-	left: -0.85rem;
+	left: 0;
 	right: -0.85rem;
 	z-index: 3;
 	display: flex;
