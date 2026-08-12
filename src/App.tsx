@@ -365,7 +365,8 @@ export function App() {
 			<div className="atmosphere" aria-hidden="true" />
 			<div className="grain" aria-hidden="true" />
 			<p className="color-caption" aria-live="polite">
-				{colorName}: {fafaHex(blue)}
+				<span>{colorName}</span>
+				<small>{fafaHex(blue)}</small>
 			</p>
 
 			<div
@@ -472,7 +473,7 @@ export function App() {
 					<div className="scene__center ending-type">
 						<h2>FAFA</h2>
 						<p>FAFA 从来不止一种颜色。</p>
-						<small>我们也是。</small>
+						<small>我们呢？</small>
 					</div>
 					<p className="ending-index">
 						{fafaHex(blue)}

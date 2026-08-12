@@ -56,10 +56,21 @@ button:focus-visible {
 	bottom: max(1.2rem, env(safe-area-inset-bottom));
 	z-index: 24;
 	margin: 0;
-	font: 10px "DM Mono", "PingFang SC", monospace;
-	letter-spacing: 0.08em;
 	opacity: 0.52;
 	pointer-events: none;
+}
+.color-caption span,
+.color-caption small {
+	display: block;
+}
+.color-caption span {
+	font: 10px "PingFang SC", "Hiragino Sans GB", sans-serif;
+	letter-spacing: 0.12em;
+}
+.color-caption small {
+	margin-top: 0.28rem;
+	font: 9px "DM Mono", monospace;
+	letter-spacing: 0.08em;
 }
 .atmosphere,
 .grain {
