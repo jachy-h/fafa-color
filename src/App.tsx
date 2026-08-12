@@ -207,7 +207,6 @@ export function App() {
 	const [blue, setBlue] = useState(sharedBlue ?? 0);
 	const [progress, setProgress] = useState(0);
 	const [copied, setCopied] = useState(false);
-	const [introColor, setIntroColor] = useState(sharedBlue);
 	const [fps, setFps] = useState(60);
 	const [spectrum, setSpectrum] = useState<number[]>(() => readTodaySpectrum());
 	const [storyBlue, setStoryBlue] = useState(sharedBlue ?? 0);
@@ -239,10 +238,6 @@ export function App() {
 	}, []);
 
 	useEffect(() => {
-		const timeout = window.setTimeout(
-			() => setIntroColor(null),
-			reducedMotion ? 0 : 1500,
-		);
 		let raf = 0;
 		let previousFrame = performance.now();
 		let frames = 0;
@@ -302,7 +297,6 @@ export function App() {
 
 		raf = requestAnimationFrame(paint);
 		return () => {
-			window.clearTimeout(timeout);
 			cancelAnimationFrame(raf);
 		};
 	}, [reducedMotion]);
@@ -362,11 +356,6 @@ export function App() {
 	return (
 		<main className="artwork">
 			<div className="atmosphere" aria-hidden="true" />
-			{introColor !== null && (
-				<div className="shared-opening" aria-live="polite">
-					<span>{fafaHex(introColor)}</span>
-				</div>
-			)}
 			<div className="grain" aria-hidden="true" />
 
 			<div

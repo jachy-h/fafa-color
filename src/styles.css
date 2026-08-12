@@ -528,29 +528,6 @@ button:focus-visible {
 	opacity: 0.42;
 }
 
-.shared-opening {
-	position: fixed;
-	z-index: 30;
-	inset: 0;
-	display: grid;
-	place-items: center;
-	background: var(--fafa-color);
-	font:
-		500 clamp(42px, 10vw, 130px) "DM Mono",
-		monospace;
-	letter-spacing: 0;
-	animation: opening 1.5s ease forwards;
-	pointer-events: none;
-}
-@keyframes opening {
-	72% {
-		opacity: 1;
-	}
-	100% {
-		opacity: 0;
-		visibility: hidden;
-	}
-}
 .debug {
 	position: fixed;
 	z-index: 40;
