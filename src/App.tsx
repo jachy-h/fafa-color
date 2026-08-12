@@ -338,7 +338,7 @@ export function App() {
 		let animationFrame = 0;
 		let infinityTimer = 0;
 		const startedAt = performance.now();
-		const duration = reducedMotion ? 0 : 1200;
+		const duration = reducedMotion ? 0 : 720;
 		const count = (time: number) => {
 			const amount = duration === 0 ? 1 : Math.min(1, (time - startedAt) / duration);
 			setPossibilityCount(Math.round(amount * 256));
