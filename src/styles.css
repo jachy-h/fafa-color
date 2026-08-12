@@ -272,12 +272,18 @@ button:focus-visible {
 .counter {
 	display: inline-flex;
 	align-items: baseline;
+	white-space: nowrap;
+	font-variant-numeric: tabular-nums;
 	font:
 		500 clamp(44px, 8.8vw, 128px) / 0.92 "DM Mono",
 		monospace;
 	letter-spacing: 0;
 }
+.counter .stable {
+	flex: 0 0 auto;
+}
 .counter__digit {
+	flex: 0 0 0.61em;
 	width: 0.61em;
 	height: 0.98em;
 	overflow: hidden;
