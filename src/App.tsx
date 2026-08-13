@@ -179,6 +179,7 @@ export function App() {
 	const [fps, setFps] = useState(60);
 	const [storyBlue, setStoryBlue] = useState(0);
 	const [possibilityCount, setPossibilityCount] = useState(0);
+	const [endingExploded, setEndingExploded] = useState(false);
 	const possibilitySequenceStarted = useRef(false);
 	const audioRef = useRef<HTMLAudioElement>(null);
 	const audioUnlocked = useRef(false);
@@ -228,7 +229,10 @@ export function App() {
 						: nextProgress < 0.78
 							? 1
 							: 2;
-			if (nextStoryStage !== -1 && nextStoryStage !== latest.current.storyStage) {
+			if (
+				nextStoryStage !== -1 &&
+				nextStoryStage !== latest.current.storyStage
+			) {
 				latest.current.storyStage = nextStoryStage;
 				setStoryBlue(STORY_BEATS[nextStoryStage]);
 			} else if (nextStoryStage === -1) {
@@ -309,11 +313,19 @@ export function App() {
 			);
 		};
 
-		window.addEventListener("pointerdown", startFromFirstInteraction, { passive: true });
-		window.addEventListener("touchstart", startFromFirstInteraction, { passive: true });
-		window.addEventListener("wheel", startFromFirstInteraction, { passive: true });
+		window.addEventListener("pointerdown", startFromFirstInteraction, {
+			passive: true,
+		});
+		window.addEventListener("touchstart", startFromFirstInteraction, {
+			passive: true,
+		});
+		window.addEventListener("wheel", startFromFirstInteraction, {
+			passive: true,
+		});
 		window.addEventListener("keydown", startFromFirstInteraction);
-		window.addEventListener("scroll", startFromFirstInteraction, { passive: true });
+		window.addEventListener("scroll", startFromFirstInteraction, {
+			passive: true,
+		});
 
 		return () => {
 			window.removeEventListener("pointerdown", startFromFirstInteraction);
@@ -363,7 +375,8 @@ export function App() {
 		const startedAt = performance.now();
 		const duration = reducedMotion ? 0 : 720;
 		const count = (time: number) => {
-			const amount = duration === 0 ? 1 : Math.min(1, (time - startedAt) / duration);
+			const amount =
+				duration === 0 ? 1 : Math.min(1, (time - startedAt) / duration);
 			setPossibilityCount(Math.round(amount * 256));
 			if (amount < 1) animationFrame = requestAnimationFrame(count);
 		};
@@ -372,6 +385,18 @@ export function App() {
 			cancelAnimationFrame(animationFrame);
 		};
 	}, [possibilitySequenceVisible, reducedMotion]);
+
+	useEffect(() => {
+		if (progress < 0.999) {
+			setEndingExploded(false);
+			return;
+		}
+		const delay = window.setTimeout(
+			() => setEndingExploded(true),
+			reducedMotion ? 0 : 900,
+		);
+		return () => window.clearTimeout(delay);
+	}, [progress, reducedMotion]);
 
 	return (
 		<main className="artwork">
@@ -397,14 +422,13 @@ export function App() {
 				aria-label={soundOn ? "关闭环境音" : "播放环境音"}
 				title={soundOn ? "关闭环境音" : "播放环境音"}
 			>
-				<span className="sound-toggle__note" aria-hidden="true">♪</span>
+				<span className="sound-toggle__note" aria-hidden="true">
+					♪
+				</span>
 				<span className="sound-toggle__slash" aria-hidden="true" />
 			</button>
 
-			<div
-				className="canvas"
-				aria-label="FAFA，一件可滚动的数字色彩作品"
-			>
+			<div className="canvas" aria-label="FAFA，一件可滚动的数字色彩作品">
 				<section className="scene scene--intro" aria-label="FAFA">
 					<div className="scene__center intro-type">
 						<h1>FAFA</h1>
@@ -415,10 +439,7 @@ export function App() {
 					</div>
 				</section>
 
-				<section
-					className="scene scene--missing"
-					aria-label="未定义的颜色通道"
-				>
+				<section className="scene scene--missing" aria-label="未定义的颜色通道">
 					<div className="scene__center missing-type">
 						<p className="broken-hex">
 							#FAFA<span>??</span>
@@ -432,7 +453,9 @@ export function App() {
 
 				<section className="scene scene--range" aria-label="颜色范围">
 					<div className="range-display">
-						<p className="range-note">{closestMoment(blue)} / {title}</p>
+						<p className="range-note">
+							{closestMoment(blue)} / {title}
+						</p>
 						<button
 							className="hex-button"
 							onClick={copyCurrent}
@@ -453,17 +476,11 @@ export function App() {
 					</p>
 				</section>
 
-				<section
-					className="scene scene--field"
-					aria-label="完整色场"
-				>
+				<section className="scene scene--field" aria-label="完整色场">
 					<ColorField activeBlue={blue} onPick={choose} />
 				</section>
 
-				<section
-					className="scene scene--deconstruct"
-					aria-label="颜色与记忆"
-				>
+				<section className="scene scene--deconstruct" aria-label="颜色与记忆">
 					<div className="scene__center color-story">
 						<div className="story-copy" key={storyBlue}>
 							<div
@@ -473,33 +490,103 @@ export function App() {
 									transform: `translateY(${(1 - storyCopyOpacity) * -10}px)`,
 								}}
 							>
-								<p className="story-kicker">{fafaHex(storyBlue)} / {storyTitle}</p>
+								<p className="story-kicker">
+									{fafaHex(storyBlue)} / {storyTitle}
+								</p>
 								<h2>{storyLine}。</h2>
 							</div>
 						</div>
 					</div>
 				</section>
 
-				<section
-					className="scene scene--possibilities"
-					aria-label="256 种可能"
-				>
+				<section className="scene scene--possibilities" aria-label="256 种可能">
 					<div
 						className="scene__center possible-type"
 						style={{ opacity: possibilityOpacity }}
 					>
 						<div className="possible-value">
-							<strong aria-label={`${possibilityCount}`}>{possibilityCount}</strong>
+							<strong aria-label={`${possibilityCount}`}>
+								{possibilityCount}
+							</strong>
 							<p>种颜色的可能</p>
 							<small>也可能是 ∞？</small>
 						</div>
 					</div>
 				</section>
 
-				<section
-					className="scene scene--ending"
-					aria-label="颜色范围的尽头"
-				>
+				<section className="scene scene--ending" aria-label="颜色范围的尽头">
+					<div
+						className={`ending-stains ${endingExploded ? "is-visible" : ""}`}
+						aria-hidden="true"
+					/>
+					<div
+						className={`ending-auras ${endingExploded ? "is-visible" : ""}`}
+						aria-hidden="true"
+					>
+						{Array.from({ length: 5 }, (_, aura) => (
+							<span
+								className="ending-aura"
+								key={aura}
+								style={
+									{
+										left: ["18%", "38%", "60%", "78%", "51%"][aura],
+										top: ["30%", "69%", "24%", "62%", "48%"][aura],
+										"--aura-color": `hsl(${[345, 42, 202, 278, 128][aura]} 78% 62%)`,
+										"--aura-size": `${20 + (aura % 3) * 7}vmax`,
+										"--aura-delay": `${aura * -640}ms`,
+									} as React.CSSProperties
+								}
+							/>
+						))}
+					</div>
+					<div
+						className={`ending-fireworks ${endingExploded ? "is-exploded" : ""}`}
+						aria-hidden="true"
+					>
+						{Array.from({ length: 252 }, (_, particle) => {
+							const burst = Math.floor(particle / 28);
+							const spark = particle % 28;
+							const origins = [
+								"8% 72%",
+								"18% 27%",
+								"32% 54%",
+								"45% 19%",
+								"55% 74%",
+								"65% 41%",
+								"78% 16%",
+								"88% 57%",
+								"92% 82%",
+							];
+							const hue = (burst * 61 + spark * 23) % 360;
+							return (
+								<div
+									className="ending-firework"
+									key={particle}
+									style={{
+										left: origins[burst].split(" ")[0],
+										top: origins[burst].split(" ")[1],
+										transform: `rotate(${spark * (360 / 28) + burst * 17}deg)`,
+									}}
+								>
+									<span
+										className="ending-firework__spark"
+										style={
+											{
+												"--distance": `${30 + (spark % 7) * 8}vmax`,
+												"--delay": `${(spark % 7) * 32 + burst * 54}ms`,
+												"--duration": `${1500 + (spark % 5) * 180}ms`,
+												"--size": `${2 + (spark % 4)}px`,
+												"--drift": `${(spark % 5) - 2}px`,
+												"--twinkle-delay": `${(spark % 9) * 230}ms`,
+												backgroundColor: `hsl(${hue} 92% 62%)`,
+												color: `hsl(${hue} 92% 62%)`,
+											} as React.CSSProperties
+										}
+									/>
+								</div>
+							);
+						})}
+					</div>
 					<div className="scene__center ending-type">
 						<h2>FAFA</h2>
 						<p>FAFA 从来不止一种颜色。</p>
